@@ -40,18 +40,17 @@ void main() {
             //Direct wave
             float d = distance(p, s.xy) * n.x;
             vec2 i = vec2(u_interfaceX, (s.y * pX + p.y * sX) / (sX + pX));
-            color.r += (s.z * pulse(u_time - d + s.w));
+            color += (s.z * pulse(u_time - d + s.w)) * u_directColor.rgb * u_directColor.a;
             //Reflected wave
             d = (distance(s.xy, i) + distance(p, i)) * n.x;
-            color.g += (s.z * pulse(u_time - d + s.w));
+            color += (s.z * pulse(u_time - d + s.w)) * u_reflectedColor.rgb * u_reflectedColor.a;
         } else {
             //Refracted wave
             vec2 i = vec2(u_interfaceX, (-s.y * pX * n.y + p.y * sX * n.x) / (sX * n.x - pX * n.y));
             float d = distance(s.xy, i) * n.x + distance(p, i) * n.y;
-            color.b += (s.z * pulse(u_time - d + s.w));
+            color += (s.z * pulse(u_time - d + s.w)) * u_refractedColor.rgb * u_refractedColor.a;
         }
     }
     color = color * 0.5 + 0.5;
-
     o_color = vec4(color, 1.0);
 }
