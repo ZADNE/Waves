@@ -68,7 +68,7 @@ void WorldRoom::step() {
     m_simSecondsPassed += SECONDS_PER_STEP * m_simSpeed;
     glm::vec2 window = engine().getWindowDims();
     glm::vec2 cursor = engine().getCursorAbs();
-    bool onInterface = std::abs(cursor.x - m_uniforms.interfaceX) <= 20.0f;
+    bool onInterface = std::abs(cursor.x - m_uniforms.interfaceX) <= 10.0f;
     if (engine().wasKeyPressed(RE::Key::LMB)) {
         m_guiType = GuiType::None;
         if (onInterface) {

@@ -41,10 +41,11 @@ private:
         float refractionIndexLeft = 1.0f;
         float refractionIndexRight = 2.0f;
         glm::vec4 interfaceColor{0.0862f, 0.0862f, 0.0862f, 1.0f};
-        glm::vec4 directColor{1.0f, 0.0f, 0.0f, 1.0f};
-        glm::vec4 reflectedColor{0.0f, 1.0f, 0.0f, 1.0f};
-        glm::vec4 refractedColor{0.0f, 0.0f, 1.0f, 1.0f};
+        glm::vec4 directColor{1.0f, 1.0f, 1.0f, 1.0f};
+        glm::vec4 reflectedColor{1.0f, 1.0f, 1.0f, 1.0f};
+        glm::vec4 refractedColor{1.0f, 1.0f, 1.0f, 1.0f};
         std::array<glm::vec4, 8> sources{};
+        std::array<int, 8> sourceTypes{};
     };
     int m_nextFreeSourceIndex = 0;
 

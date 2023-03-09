@@ -20,10 +20,17 @@ vec2 orientedRefractionIndices(vec4 s){
     }
 }
 
-float pulse(float phase){
-    phase *= 0.1;
-    float s = (phase >= 0.0) ? sin(phase) : 0.0;
-    return (s >= 0.5) ? (-0.5 + s * 1.5) : 0.0f;
+float wave(int type, float phase){
+    switch (type){
+    case 0:
+        return 0;
+    case 1:
+        return (phase >= 0.0) ? sin(phase * 0.1) : 0.0;
+    case 2:
+        float s = (phase >= 0.0) ? sin(phase * 0.1) : 0.0;
+        return (s >= 0.5) ? (-0.5 + s * 1.5) : 0.0;
+    }
+
 }
 
 void main() {
@@ -33,6 +40,7 @@ void main() {
 
     for (int i = 0; i < u_sources.length(); i++){
         vec4 s = u_sources[i];
+        int type = u_sourceTypes[i];
         float sX = (s.x - u_interfaceX);
         float pX = (p.x - u_interfaceX);
         vec2 n = orientedRefractionIndices(s);
@@ -40,15 +48,15 @@ void main() {
             //Direct wave
             float d = distance(p, s.xy) * n.x;
             vec2 i = vec2(u_interfaceX, (s.y * pX + p.y * sX) / (sX + pX));
-            color += (s.z * pulse(u_time - d + s.w)) * u_directColor.rgb * u_directColor.a;
+            color += (s.z * wave(type, u_time - d + s.w)) * u_directColor.rgb * u_directColor.a;
             //Reflected wave
             d = (distance(s.xy, i) + distance(p, i)) * n.x;
-            color += (s.z * pulse(u_time - d + s.w)) * u_reflectedColor.rgb * u_reflectedColor.a;
+            color += (s.z * wave(type, u_time - d + s.w)) * u_reflectedColor.rgb * u_reflectedColor.a;
         } else {
             //Refracted wave
             vec2 i = vec2(u_interfaceX, (-s.y * pX * n.y + p.y * sX * n.x) / (sX * n.x - pX * n.y));
             float d = distance(s.xy, i) * n.x + distance(p, i) * n.y;
-            color += (s.z * pulse(u_time - d + s.w)) * u_refractedColor.rgb * u_refractedColor.a;
+            color += (s.z * wave(type, u_time - d + s.w)) * u_refractedColor.rgb * u_refractedColor.a;
         }
     }
     color = color * 0.5 + 0.5;

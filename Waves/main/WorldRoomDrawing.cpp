@@ -8,6 +8,18 @@ RE::Color convert(const glm::vec4& col) {
 }
 
 void WorldRoom::renderGUI() {
+    auto addSource = [&](int type) {
+        m_selectedSourceIndex = m_nextFreeSourceIndex;
+        m_uniforms.sources[m_selectedSourceIndex] = glm::vec4{
+            m_guiPos.x, m_windowDims.y - m_guiPos.y - 1.0f,
+            1.0f,
+            -m_simSecondsPassed
+        };
+        m_uniforms.sourceTypes[m_selectedSourceIndex] = type;
+        m_nextFreeSourceIndex++;
+        m_guiType = GuiType::None;
+    };
+
     switch (m_guiType) {
     case GuiType::Interface:
         ImGui::SetNextWindowPos(m_guiPos, ImGuiCond_Always, {0.5f, 0.0f});
@@ -35,15 +47,8 @@ void WorldRoom::renderGUI() {
     case GuiType::NewSource:
         ImGui::SetNextWindowPos(m_guiPos, ImGuiCond_Always);
         if (ImGui::Begin("##Add new source", nullptr, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoTitleBar)) {
-            if (ImGui::Button("Add new source")) {
-                m_selectedSourceIndex = m_nextFreeSourceIndex;
-                m_uniforms.sources[m_nextFreeSourceIndex++] = glm::vec4{
-                    m_guiPos.x, m_windowDims.y - m_guiPos.y - 1.0f,
-                    1.0f,
-                    -m_simSecondsPassed
-                };
-                m_guiType = GuiType::None;
-            }
+            if (ImGui::Button("Add harmonic source")) { addSource(1); }
+            if (ImGui::Button("Add pulse source")) { addSource(2); }
         }
         ImGui::End();
         break;
@@ -59,6 +64,10 @@ void WorldRoom::renderGUI() {
                     std::swap(
                         m_uniforms.sources[m_selectedSourceIndex],
                         m_uniforms.sources[m_nextFreeSourceIndex]
+                    );
+                    std::swap(
+                        m_uniforms.sourceTypes[m_selectedSourceIndex],
+                        m_uniforms.sourceTypes[m_nextFreeSourceIndex]
                     );
                 }
                 m_uniforms.sources[m_nextFreeSourceIndex] = glm::vec4{0.0f};
@@ -91,6 +100,17 @@ void WorldRoom::renderGUI() {
                 ImGui::ColorEdit4("Direct", &m_uniforms.directColor.x);
                 ImGui::ColorEdit4("Reflected", &m_uniforms.reflectedColor.x);
                 ImGui::ColorEdit4("Refracted", &m_uniforms.refractedColor.x);
+                if (ImGui::Button("Just amplitude")) {
+                    m_uniforms.directColor = {1.0f, 1.0f, 1.0f, 1.0f};
+                    m_uniforms.reflectedColor = {1.0f, 1.0f, 1.0f, 1.0f};
+                    m_uniforms.refractedColor = {1.0f, 1.0f, 1.0f, 1.0f};
+                }
+                ImGui::SameLine();
+                if (ImGui::Button("By origin")) {
+                    m_uniforms.directColor = {1.0f, 0.0f, 0.0f, 1.0f};
+                    m_uniforms.reflectedColor = {0.0f, 1.0f, 0.0f, 1.0f};
+                    m_uniforms.refractedColor = {0.0f, 0.0f, 1.0f, 1.0f};
+                }
                 ImGui::EndTabItem();
             }
             ImGui::EndTabBar();

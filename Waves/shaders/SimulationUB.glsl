@@ -1,7 +1,8 @@
 /*!
  *  @author     Dubsky Tomas
  */
-layout(set = 0, binding = 0, std140) restrict uniform SimulationUB {
+#extension GL_EXT_scalar_block_layout : require
+layout(set = 0, binding = 0, std430) restrict uniform SimulationUB {
     vec4    u_areaDims;
     float   u_time;
     float   u_interfaceX;
@@ -12,4 +13,5 @@ layout(set = 0, binding = 0, std140) restrict uniform SimulationUB {
     vec4    u_reflectedColor;
     vec4    u_refractedColor;
     vec4    u_sources[8];   //x,y = position, z = amplitude, w = phase shift
+    int     u_sourceTypes[8];
 };
