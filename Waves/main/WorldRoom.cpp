@@ -50,7 +50,8 @@ WorldRoom::WorldRoom(size_t name):
     m_uniforms(SimulationUB{
         .areaDims = glm::vec4{m_windowDims, 0.0f, 0.0f},
         .interfaceX = m_windowDims.x * 0.5f
-    }) {
+    }),
+    m_resolution(std::find(RESOLUTIONS.begin(), RESOLUTIONS.end(), engine().getWindowDims())) {
     m_descriptorSet.write(vk::DescriptorType::eUniformBufferDynamic, 0u, 0u, m_simulationUB, 0ull, sizeof(SimulationUB));
     engine().setWindowTitle("Waves");
     m_view.shiftPosition(m_windowDims * 0.5f);

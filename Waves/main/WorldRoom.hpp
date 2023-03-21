@@ -12,6 +12,8 @@
 #include <RealEngine/rendering/batches/GeometryBatch.hpp>
 #include <RealEngine/rendering/cameras/View2D.hpp>
 
+#include <Waves/misc/combos.hpp>
+
  /**
   * @brief Holds all gameplay-related objects.
  */
@@ -68,5 +70,7 @@ private:
     RE::Buffer m_simulationUB;
     SimulationUB m_uniforms;
     SimulationUB* m_simulationUBMapped = m_simulationUB.map<SimulationUB>(0ull, VK_WHOLE_SIZE);
-    RE::GeometryBatch m_gb{vk::PrimitiveTopology::eLineList, 64u, 3.0f};
+    RE::GeometryBatch m_gb{vk::PrimitiveTopology::eLineList, 64u, 5.0f};
+    ImFont* m_arial = ImGui::GetIO().Fonts->AddFontFromFileTTF("fonts/arial.ttf", 21.0f);
+    decltype(RESOLUTIONS)::const_iterator m_resolution;
 };

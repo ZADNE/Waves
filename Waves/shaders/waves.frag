@@ -23,14 +23,23 @@ vec2 orientedRefractionIndices(vec4 s){
 float wave(int type, float phase){
     switch (type){
     case 0:
-        return 0;
+        return 0.0;
     case 1:
-        return (phase >= 0.0) ? sin(phase * 0.1) : 0.0;
+        return sin(max(phase * 0.1, 0.0));
     case 2:
-        float s = (phase >= 0.0) ? sin(phase * 0.1) : 0.0;
-        return (s >= 0.5) ? (-0.5 + s * 1.5) : 0.0;
+        float s = sin(max(phase * 0.05, 0.0));
+        return max(s * 128.0 - 127.0, 0.0);
     }
+}
 
+float reflectance(vec2 n, vec2 si, float si_l){
+    float cosI = si.x / si_l;
+    float sinI = si.y / si_l;
+    float nCosI = n.x * cosI;
+    float nnSinI = n.x / n.y * sinI;
+    float nCosT = n.y * sqrt(1.0 - nnSinI * nnSinI);
+    float r = (nCosI - nCosT) / (nCosI + nCosT);
+    return r * r;
 }
 
 void main() {
@@ -47,16 +56,22 @@ void main() {
         if (sign(sX) == sign(pX)){
             //Direct wave
             float d = distance(p, s.xy) * n.x;
-            vec2 i = vec2(u_interfaceX, (s.y * pX + p.y * sX) / (sX + pX));
             color += (s.z * wave(type, u_time - d + s.w)) * u_directColor.rgb * u_directColor.a;
             //Reflected wave
-            d = (distance(s.xy, i) + distance(p, i)) * n.x;
-            color += (s.z * wave(type, u_time - d + s.w)) * u_reflectedColor.rgb * u_reflectedColor.a;
+            vec2 i = vec2(u_interfaceX, (s.y * pX + p.y * sX) / (sX + pX));
+            vec2 si = i - s.xy;
+            float si_l = length(si);
+            float r = reflectance(n, si, si_l);
+            d = (si_l + distance(p, i)) * n.x;
+            color += (s.z * wave(type, u_time - d + s.w)) * u_reflectedColor.rgb * u_reflectedColor.a * r;
         } else {
             //Refracted wave
             vec2 i = vec2(u_interfaceX, (-s.y * pX * n.y + p.y * sX * n.x) / (sX * n.x - pX * n.y));
-            float d = distance(s.xy, i) * n.x + distance(p, i) * n.y;
-            color += (s.z * wave(type, u_time - d + s.w)) * u_refractedColor.rgb * u_refractedColor.a;
+            vec2 si = i - s.xy;
+            float si_l = length(si);
+            float r = reflectance(n, si, si_l);
+            float d = si_l * n.x + distance(p, i) * n.y;
+            color += (s.z * wave(type, u_time - d + s.w)) * u_refractedColor.rgb * u_refractedColor.a * (1.0 - r);
         }
     }
     color = color * 0.5 + 0.5;

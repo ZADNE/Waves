@@ -11,5 +11,9 @@ target_link_libraries(Waves
     PUBLIC
         RealEngine
 )
+add_custom_command(TARGET Waves POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_directory
+    ${CMAKE_CURRENT_SOURCE_DIR}/data/ .
+)
 
 add_subdirectory(Waves)

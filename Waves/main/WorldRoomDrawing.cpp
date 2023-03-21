@@ -1,7 +1,7 @@
 ﻿/*!
  *  @author    Dubsky Tomas
  */
-#include <WAves/main/WorldRoom.hpp>
+#include <Waves/main/WorldRoom.hpp>
 
 RE::Color convert(const glm::vec4& col) {
     return col * 255.0f;
@@ -20,6 +20,7 @@ void WorldRoom::renderGUI() {
         m_guiType = GuiType::None;
     };
 
+    ImGui::PushFont(m_arial);
     switch (m_guiType) {
     case GuiType::Interface:
         ImGui::SetNextWindowPos(m_guiPos, ImGuiCond_Always, {0.5f, 0.0f});
@@ -96,6 +97,15 @@ void WorldRoom::renderGUI() {
             }
             if (ImGui::BeginTabItem("Visualization")) {
                 ImGui::Text("FPS: %u", engine().getFramesPerSecond());
+                if (comboSelect(RESOLUTIONS, "Resolution", engine().getWindowDims().x * 0.125f, m_resolution, ivec2ToString)) {
+                    m_windowDims = *m_resolution;
+                    engine().setWindowDims(m_windowDims, true);
+                    m_uniforms.areaDims = glm::vec4{m_windowDims, 0.0f, 0.0f};
+                    m_uniforms.interfaceX = m_windowDims.x * 0.5f;
+                    m_view = RE::View2D{m_windowDims};
+                    m_view.shiftPosition(m_windowDims * 0.5f);
+                }
+                ImGui::Text("Colors");
                 ImGui::ColorEdit4("Interface", &m_uniforms.interfaceColor.x);
                 ImGui::ColorEdit4("Direct", &m_uniforms.directColor.x);
                 ImGui::ColorEdit4("Reflected", &m_uniforms.reflectedColor.x);
@@ -113,10 +123,17 @@ void WorldRoom::renderGUI() {
                 }
                 ImGui::EndTabItem();
             }
+            if (ImGui::BeginTabItem("Exit")) {
+                if (ImGui::Button("Exit")) {
+                    engine().scheduleExit();
+                }
+                ImGui::EndTabItem();
+            }
             ImGui::EndTabBar();
         }
     }
     ImGui::End();
+    ImGui::PopFont();
 }
 
 void WorldRoom::renderLines(const vk::CommandBuffer& commandBuffer, double interpolationFactor) {
