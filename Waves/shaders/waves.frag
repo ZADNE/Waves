@@ -22,24 +22,28 @@ vec2 orientedRefractionIndices(vec4 s){
 
 float wave(int type, float phase){
     switch (type){
-    case 0:
-        return 0.0;
     case 1:
         return sin(max(phase * 0.1, 0.0));
     case 2:
         float s = sin(max(phase * 0.05, 0.0));
         return max(s * 128.0 - 127.0, 0.0);
     }
+    return 0.0;//Should not ever get here
 }
 
 float reflectance(vec2 n, vec2 si, float si_l){
-    float cosI = si.x / si_l;
     float sinI = si.y / si_l;
-    float nCosI = n.x * cosI;
-    float nnSinI = n.x / n.y * sinI;
-    float nCosT = n.y * sqrt(1.0 - nnSinI * nnSinI);
-    float r = (nCosI - nCosT) / (nCosI + nCosT);
-    return r * r;
+    if ((n.x > n.y) && (abs(sinI) >= (n.y / n.x))){
+        return 1.0;
+    } else {
+        float I = asin(sinI);
+        float T = asin(n.x / n.y * sinI);
+        float cosI = cos(I);
+        float cosT = cos(T);
+        float rs = (n.x*cosI - n.y*cosT) / (n.x*cosI + n.y*cosT);
+        //float rp = (n.x*cosT - n.y*cosI) / (n.x*cosT + n.y*cosI);
+        return rs * rs;
+    }
 }
 
 void main() {
@@ -48,8 +52,9 @@ void main() {
     vec3 color = vec3(0.0);
 
     for (int i = 0; i < u_sources.length(); i++){
-        vec4 s = u_sources[i];
         int type = u_sourceTypes[i];
+        if (type == 0) continue;
+        vec4 s = u_sources[i];
         float sX = (s.x - u_interfaceX);
         float pX = (p.x - u_interfaceX);
         vec2 n = orientedRefractionIndices(s);
@@ -66,7 +71,7 @@ void main() {
             color += (s.z * wave(type, u_time - d + s.w)) * u_reflectedColor.rgb * u_reflectedColor.a * r;
         } else {
             //Refracted wave
-            vec2 i = vec2(u_interfaceX, (-s.y * pX * n.y + p.y * sX * n.x) / (sX * n.x - pX * n.y));
+            vec2 i = vec2(u_interfaceX, (-s.y * pX * n.x + p.y * sX * n.y) / (sX * n.y - pX * n.x));
             vec2 si = i - s.xy;
             float si_l = length(si);
             float r = reflectance(n, si, si_l);
@@ -74,6 +79,8 @@ void main() {
             color += (s.z * wave(type, u_time - d + s.w)) * u_refractedColor.rgb * u_refractedColor.a * (1.0 - r);
         }
     }
-    color = color * 0.5 + 0.5;
+    if (u_zeroGray != 0){
+        color = color * 0.5 + 0.5;
+    }
     o_color = vec4(color, 1.0);
 }

@@ -3,7 +3,9 @@
  */
 #extension GL_EXT_scalar_block_layout : require
 layout(set = 0, binding = 0, std430) restrict uniform SimulationUB {
-    vec4    u_areaDims;
+    vec2    u_areaDims;
+    int     u_zeroGray;
+    int     u_padding;
     float   u_time;
     float   u_interfaceX;
     float   u_refractionIndexLeft;

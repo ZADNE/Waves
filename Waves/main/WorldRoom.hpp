@@ -34,10 +34,12 @@ private:
 
     glm::vec2 m_windowDims = engine().getWindowDims();
     float m_simSecondsPassed = 0.0f;
-    float m_simSpeed = 1.0f;
+    float m_simSpeed = 32.0f;
 
     struct alignas(256) SimulationUB {
-        glm::vec4 areaDims;
+        glm::vec2 areaDims;
+        int zeroGray = 0;
+        int padding = 0;
         float time = 0.0f;
         float interfaceX;
         float refractionIndexLeft = 1.0f;

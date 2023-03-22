@@ -71,7 +71,7 @@ void WorldRoom::renderGUI() {
                         m_uniforms.sourceTypes[m_nextFreeSourceIndex]
                     );
                 }
-                m_uniforms.sources[m_nextFreeSourceIndex] = glm::vec4{0.0f};
+                m_uniforms.sourceTypes[m_nextFreeSourceIndex] = 0;
                 m_guiType = GuiType::None;
             }
         }
@@ -87,10 +87,11 @@ void WorldRoom::renderGUI() {
         if (ImGui::BeginTabBar("##TabBar")) {
             if (ImGui::BeginTabItem("Simulation")) {
                 ImGui::SliderFloat("Simulation speed",
-                    &m_simSpeed, 1.0f, 64.0f, "%.3f", ImGuiSliderFlags_Logarithmic | ImGuiSliderFlags_NoRoundToFormat);
+                    &m_simSpeed, 4.0f, 256.0f, "%.3f", ImGuiSliderFlags_Logarithmic | ImGuiSliderFlags_NoRoundToFormat);
                 ImGui::EndTabItem();
                 if (ImGui::Button("Remove all sources")) {
                     m_uniforms.sources = {};
+                    m_uniforms.sourceTypes = {};
                     m_nextFreeSourceIndex = 0;
                     m_guiType = GuiType::None;
                 }
@@ -105,7 +106,8 @@ void WorldRoom::renderGUI() {
                     m_view = RE::View2D{m_windowDims};
                     m_view.shiftPosition(m_windowDims * 0.5f);
                 }
-                ImGui::Text("Colors");
+                ImGui::Separator();
+                ImGui::Text("Plane colors");
                 ImGui::ColorEdit4("Interface", &m_uniforms.interfaceColor.x);
                 ImGui::ColorEdit4("Direct", &m_uniforms.directColor.x);
                 ImGui::ColorEdit4("Reflected", &m_uniforms.reflectedColor.x);
@@ -120,6 +122,10 @@ void WorldRoom::renderGUI() {
                     m_uniforms.directColor = {1.0f, 0.0f, 0.0f, 1.0f};
                     m_uniforms.reflectedColor = {0.0f, 1.0f, 0.0f, 1.0f};
                     m_uniforms.refractedColor = {0.0f, 0.0f, 1.0f, 1.0f};
+                }
+                ImGui::Separator();
+                if (ImGui::Button(m_uniforms.zeroGray ? "Make zero black" : "Make zero gray")) {
+                    m_uniforms.zeroGray = 1 - m_uniforms.zeroGray;
                 }
                 ImGui::EndTabItem();
             }
@@ -163,8 +169,8 @@ void WorldRoom::renderLines(const vk::CommandBuffer& commandBuffer, double inter
             glm::vec2 n =
                 (s.x < u.interfaceX) ?
                 glm::vec2{u.refractionIndexLeft, u.refractionIndexRight} :
-                glm::vec2{u.refractionIndexLeft, u.refractionIndexRight};
-            glm::vec2 i = {u.interfaceX, (-s.y * pX * n.y + p.y * sX * n.x) / (sX * n.x - pX * n.y)};
+                glm::vec2{u.refractionIndexRight, u.refractionIndexLeft};
+            glm::vec2 i = {u.interfaceX, (-s.y * pX * n.x + p.y * sX * n.y) / (sX * n.y - pX * n.x)};
             vertices[j++] = {s, convert(u.directColor)};
             vertices[j++] = {i, convert(u.directColor)};
             vertices[j++] = {i, convert(u.refractedColor)};
