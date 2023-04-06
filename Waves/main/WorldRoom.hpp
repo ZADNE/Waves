@@ -39,7 +39,7 @@ private:
     struct alignas(256) SimulationUB {
         glm::vec2 areaDims;
         int zeroGray = 0;
-        int padding = 0;
+        int showPolarization = *POLARIZATIONS.begin();
         float time = 0.0f;
         float interfaceX;
         float refractionIndexLeft = 1.0f;
@@ -75,4 +75,5 @@ private:
     RE::GeometryBatch m_gb{vk::PrimitiveTopology::eLineList, 64u, 5.0f};
     ImFont* m_arial = ImGui::GetIO().Fonts->AddFontFromFileTTF("fonts/arial.ttf", 21.0f);
     decltype(RESOLUTIONS)::const_iterator m_resolution;
+    decltype(POLARIZATIONS)::const_iterator m_showPolarization = POLARIZATIONS.begin();
 };

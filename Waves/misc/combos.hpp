@@ -28,6 +28,26 @@ inline std::string ivec2ToString(const glm::ivec2& vec) {
     return std::to_string(vec.x) + "x" + std::to_string(vec.y);
 }
 
+inline constexpr std::array<int, 3> POLARIZATIONS = {
+    0,
+    1,
+    2
+};
+
+inline const std::string& intToPolarization(int polarization) {
+    static std::string sum = "sum";
+    static std::string s = "s component";
+    static std::string p = "p component";
+    static std::string unk = "unknown";
+
+    switch (polarization) {
+    case 0:     return sum;
+    case 1:     return s;
+    case 2:     return p;
+    default:    return unk;
+    }
+}
+
 template<typename T, size_t N, typename ToStringConvertor>
 bool comboSelect(const std::array<T, N>& combos, const char* label, float width, typename std::array<T, N>::const_iterator& selected, ToStringConvertor toString) {
     ImGui::TextUnformatted(label); ImGui::SameLine();

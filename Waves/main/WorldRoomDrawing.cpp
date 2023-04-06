@@ -97,6 +97,36 @@ void WorldRoom::renderGUI() {
                 }
             }
             if (ImGui::BeginTabItem("Visualization")) {
+                ImGui::Text("Colors");
+                ImGui::SameLine();
+                if (ImGui::Button("Just amplitude")) {
+                    m_uniforms.directColor = {1.0f, 1.0f, 1.0f, 1.0f};
+                    m_uniforms.reflectedColor = {1.0f, 1.0f, 1.0f, 1.0f};
+                    m_uniforms.refractedColor = {1.0f, 1.0f, 1.0f, 1.0f};
+                }
+                ImGui::SameLine();
+                if (ImGui::Button("By type")) {
+                    m_uniforms.directColor = {1.0f, 0.0f, 0.0f, 1.0f};
+                    m_uniforms.reflectedColor = {0.0f, 1.0f, 0.0f, 1.0f};
+                    m_uniforms.refractedColor = {0.0f, 0.0f, 1.0f, 1.0f};
+                }
+                ImGui::ColorEdit4("Interface", &m_uniforms.interfaceColor.x);
+                ImGui::ColorEdit4("Direct", &m_uniforms.directColor.x);
+                ImGui::ColorEdit4("Reflected", &m_uniforms.reflectedColor.x);
+                ImGui::ColorEdit4("Refracted", &m_uniforms.refractedColor.x);
+                ImGui::Separator();
+                ImGui::Text("Still color ");
+                ImGui::SameLine();
+                if (ImGui::Button(m_uniforms.zeroGray ? "Set black" : "Set gray")) {
+                    m_uniforms.zeroGray = 1 - m_uniforms.zeroGray;
+                }
+                ImGui::Separator();
+                if (comboSelect(POLARIZATIONS, "Show polarization", engine().getWindowDims().x * 0.125f, m_showPolarization, intToPolarization)) {
+                    m_uniforms.showPolarization = *m_showPolarization;
+                }
+                ImGui::EndTabItem();
+            }
+            if (ImGui::BeginTabItem("Settings")) {
                 ImGui::Text("FPS: %u", engine().getFramesPerSecond());
                 if (comboSelect(RESOLUTIONS, "Resolution", engine().getWindowDims().x * 0.125f, m_resolution, ivec2ToString)) {
                     m_windowDims = *m_resolution;
@@ -105,27 +135,6 @@ void WorldRoom::renderGUI() {
                     m_uniforms.interfaceX = m_windowDims.x * 0.5f;
                     m_view = RE::View2D{m_windowDims};
                     m_view.shiftPosition(m_windowDims * 0.5f);
-                }
-                ImGui::Separator();
-                ImGui::Text("Plane colors");
-                ImGui::ColorEdit4("Interface", &m_uniforms.interfaceColor.x);
-                ImGui::ColorEdit4("Direct", &m_uniforms.directColor.x);
-                ImGui::ColorEdit4("Reflected", &m_uniforms.reflectedColor.x);
-                ImGui::ColorEdit4("Refracted", &m_uniforms.refractedColor.x);
-                if (ImGui::Button("Just amplitude")) {
-                    m_uniforms.directColor = {1.0f, 1.0f, 1.0f, 1.0f};
-                    m_uniforms.reflectedColor = {1.0f, 1.0f, 1.0f, 1.0f};
-                    m_uniforms.refractedColor = {1.0f, 1.0f, 1.0f, 1.0f};
-                }
-                ImGui::SameLine();
-                if (ImGui::Button("By origin")) {
-                    m_uniforms.directColor = {1.0f, 0.0f, 0.0f, 1.0f};
-                    m_uniforms.reflectedColor = {0.0f, 1.0f, 0.0f, 1.0f};
-                    m_uniforms.refractedColor = {0.0f, 0.0f, 1.0f, 1.0f};
-                }
-                ImGui::Separator();
-                if (ImGui::Button(m_uniforms.zeroGray ? "Make zero black" : "Make zero gray")) {
-                    m_uniforms.zeroGray = 1 - m_uniforms.zeroGray;
                 }
                 ImGui::EndTabItem();
             }

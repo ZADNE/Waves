@@ -20,30 +20,41 @@ vec2 orientedRefractionIndices(vec4 s){
     }
 }
 
-float wave(int type, float phase){
+//x = s component
+//y = p component
+vec2 wave(int type, float phase){
     switch (type){
     case 1:
-        return sin(max(phase * 0.1, 0.0));
+        return vec2(sin(max(phase * 0.1, 0.0)));
     case 2:
         float s = sin(max(phase * 0.05, 0.0));
-        return max(s * 128.0 - 127.0, 0.0);
+        return vec2(max(s * 128.0 - 127.0, 0.0));
     }
-    return 0.0;//Should not ever get here
+    return vec2(0.0);//Should not ever get here
 }
 
-float reflectance(vec2 n, vec2 si, float si_l){
+vec2 reflectance(vec2 n, vec2 si, float si_l){
     float sinI = si.y / si_l;
     if ((n.x > n.y) && (abs(sinI) >= (n.y / n.x))){
-        return 1.0;
+        return vec2(1.0);
     } else {
         float I = asin(sinI);
         float T = asin(n.x / n.y * sinI);
         float cosI = cos(I);
         float cosT = cos(T);
         float rs = (n.x*cosI - n.y*cosT) / (n.x*cosI + n.y*cosT);
-        //float rp = (n.x*cosT - n.y*cosI) / (n.x*cosT + n.y*cosI);
-        return rs * rs;
+        float rp = (n.x*cosT - n.y*cosI) / (n.x*cosT + n.y*cosI);
+        return vec2(rs * rs, rp * rp);
     }
+}
+
+float showPolarization(vec2 a){
+    switch (u_showPolarization){
+        case POLARIZATION_SUM:  return dot(a, vec2(0.5));
+        case POLARIZATION_S:    return a.x;
+        case POLARIZATION_P:    return a.y;
+    }
+    return 0.0;//Should not ever get here
 }
 
 void main() {
@@ -61,22 +72,22 @@ void main() {
         if (sign(sX) == sign(pX)){
             //Direct wave
             float d = distance(p, s.xy) * n.x;
-            color += (s.z * wave(type, u_time - d + s.w)) * u_directColor.rgb * u_directColor.a;
+            color += showPolarization(s.z * wave(type, u_time - d + s.w)) * u_directColor.rgb * u_directColor.a;
             //Reflected wave
             vec2 i = vec2(u_interfaceX, (s.y * pX + p.y * sX) / (sX + pX));
             vec2 si = i - s.xy;
             float si_l = length(si);
-            float r = reflectance(n, si, si_l);
+            vec2 r = reflectance(n, si, si_l);
             d = (si_l + distance(p, i)) * n.x;
-            color += (s.z * wave(type, u_time - d + s.w)) * u_reflectedColor.rgb * u_reflectedColor.a * r;
+            color += showPolarization((s.z * wave(type, u_time - d + s.w)) * r) * u_reflectedColor.rgb * u_reflectedColor.a;
         } else {
             //Refracted wave
             vec2 i = vec2(u_interfaceX, (-s.y * pX * n.x + p.y * sX * n.y) / (sX * n.y - pX * n.x));
             vec2 si = i - s.xy;
             float si_l = length(si);
-            float r = reflectance(n, si, si_l);
+            vec2 r = reflectance(n, si, si_l);
             float d = si_l * n.x + distance(p, i) * n.y;
-            color += (s.z * wave(type, u_time - d + s.w)) * u_refractedColor.rgb * u_refractedColor.a * (1.0 - r);
+            color += showPolarization((s.z * wave(type, u_time - d + s.w)) * (1.0 - r)) * u_refractedColor.rgb * u_refractedColor.a;
         }
     }
     if (u_zeroGray != 0){
