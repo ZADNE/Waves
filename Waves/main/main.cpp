@@ -1,16 +1,17 @@
-﻿/*! 
+﻿/*!
  *  @author    Dubsky Tomas
  */
 #include <RealEngine/program/MainProgram.hpp>
 
 #include <Waves/main/WorldRoom.hpp>
 
-constexpr size_t WORLD_ROOM_NAME = 1;
-
 int main(int argc, char* argv[]) {
-    RE::MainProgram::initialize();
+    vk::StructureChain chain{vk::PhysicalDeviceFeatures2{
+        vk::PhysicalDeviceFeatures{}.setWideLines(true)}};
+    re::VulkanInitInfo initInfo{.deviceCreateInfoChain = &chain.get<>()};
+    re::MainProgram::initialize(initInfo);
 
-    RE::MainProgram::addRoom<WorldRoom>(WORLD_ROOM_NAME);
+    auto* room = re::MainProgram::addRoom<WorldRoom>(0);
 
-    return RE::MainProgram::run(WORLD_ROOM_NAME, {});
+    return re::MainProgram::run(room->name(), {});
 }
